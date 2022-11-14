@@ -1,0 +1,29 @@
+
+.footer {
+    display: inline;
+    background-color: white;
+    text-align: center;
+    justify-content: center;
+    color: black;
+  }
+
+  section {
+    display: flex;
+    width: 100%;
+    margin: 0 0;
+    text-align: center;
+    justify-content: center;
+    flex-wrap: wrap;
+    flex-direction: column;
+  }
+
+
+.myfooter {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.iconos {
+  color: black;
+}
