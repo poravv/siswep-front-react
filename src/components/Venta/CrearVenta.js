@@ -75,6 +75,7 @@ const CrearVenta = ({ token, idusuario,idsucursal }) => {
         }
       ).then((cabecera) => {
         try {
+          console.log('Entra en guarda detalle')
           //Guardado del detalle
           tblventatmp.map((venta) => {
             guardaDetalle({
@@ -86,12 +87,12 @@ const CrearVenta = ({ token, idusuario,idsucursal }) => {
               subtotal: venta.producto_final.costo * venta.cantidad,
             });
             operacionVenta(venta.producto_final.idproducto_final);
-            return true;
+            return null;
           });
           
         } catch (error) {
           console.log(e);
-          setMensaje('Error de guardado cabecera.')
+          setMensaje('Error de guardado detalle.')
           setTimeout(() => {
             setMensaje(null)
           }, 8000);
@@ -102,7 +103,7 @@ const CrearVenta = ({ token, idusuario,idsucursal }) => {
       });
     } catch (e) {
       console.log(e);
-      setMensaje('Error de guardado detalle.')
+      setMensaje('Error de guardado cabecera.')
       setTimeout(() => {
         setMensaje(null)
       }, 8000);
@@ -117,6 +118,7 @@ const CrearVenta = ({ token, idusuario,idsucursal }) => {
   }
 
   const operacionVenta = async (idproducto_final) => {
+      //console.log(idproducto_final,'-',idusuario,'-',0);
       return await axios.post(URI + `operacionventa/${idproducto_final}-procesado-${idusuario}-0`, {}, config);
   }
 
@@ -135,7 +137,15 @@ const CrearVenta = ({ token, idusuario,idsucursal }) => {
         if (validExist.length === 0) {
 
           //La idea es hacer que en el server se haga el calculo de si existe o no el stock por el producto
-          if (productoSeleccionado.obs === 'STOCK') {
+          console.log(productoSeleccionado.obs);
+          if (productoSeleccionado.obs !== 'STOCK') {
+            setMensaje('No hay stock para este producto')
+            setTimeout(() => {
+              setMensaje(null)
+            }, 8000);
+            handleShow();
+            return ;
+          } 
 
             //console.log('Cantidad posible ', productoSeleccionado.cant_prod_posible);
             //console.log('Cantidad requerida ', cantidad);
@@ -148,7 +158,7 @@ const CrearVenta = ({ token, idusuario,idsucursal }) => {
                 console.log('Error: ', error);
               }
 
-              console.log(productoSeleccionado);
+              //console.log(productoSeleccionado);
 
 
               tblventatmp.push({
@@ -168,14 +178,6 @@ const CrearVenta = ({ token, idusuario,idsucursal }) => {
               }, 8000);
               handleShow();
             }
-          } else {
-            setMensaje('No hay stock para este producto')
-            setTimeout(() => {
-              setMensaje(null)
-            }, 8000);
-            handleShow();
-          }
-
 
           setProductoSeleccionado(null);
 

@@ -7,7 +7,7 @@ import {logOutSys} from '../components/Utils/LogOutSys';
 
 
 const NavBarV1 = ({nivel}) => {
-    console.log(nivel);
+    //console.log(nivel);
     
     //<Nav.Link as={Link} to='/inventario' >Inventario</Nav.Link>
     return (

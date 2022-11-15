@@ -48,14 +48,11 @@ function LoginForm() {
 
     return (
         <div>
-            <div className='header' style={{ backgroundColor: `black` }}>
-                <h1 style={{ color: `white` }}>
-                    Acceso al sistema
-                </h1>
-            </div>
             <div className='cuerpo'>
                 <Form className='form-login' onSubmit={handleLoginSubmit}>
-
+                <h1 style={{ color: `black` }}>
+                    Acceso al sistema
+                </h1>
                     <label style={{ color: `red` }} >{errorMensaje}</label>
 
                     <Form.Group className="mb-3" controlId="formBasicusuario">

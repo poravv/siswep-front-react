@@ -12,7 +12,7 @@ export default function BuscadorDato({ uri,config,setDatoSeleccionado,campo }) {
   const [filtroDato, setFiltroDato] = useState([]);
   const [value, setValue] = useState("");
 
-  const getProductoes = async () => {
+  const getDatoBD = async () => {
     const res = await axios.get(uri, config);
     setDato(res.data.body);
     setFiltroDato(res.data.body);
@@ -20,7 +20,7 @@ export default function BuscadorDato({ uri,config,setDatoSeleccionado,campo }) {
   }
 
   useEffect(() => {
-    getProductoes()
+    getDatoBD();
     // eslint-disable-next-line
   }, [])
 
