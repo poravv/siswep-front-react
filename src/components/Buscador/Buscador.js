@@ -6,11 +6,11 @@ import '../../CSS/Cuerpo.css'
 import '../../CSS/Buscador.css';
 
 
-export default function BuscadorDato({ uri,config,setDatoSeleccionado,campo }) {  
+export default function BuscadorDato({ uri,config,setDatoSeleccionado,campo,setValue,value }) {  
 
   const [dato, setDato] = useState([]);
   const [filtroDato, setFiltroDato] = useState([]);
-  const [value, setValue] = useState("");
+  
 
   const getDatoBD = async () => {
     const res = await axios.get(uri, config);

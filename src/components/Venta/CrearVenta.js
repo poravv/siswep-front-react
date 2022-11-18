@@ -22,8 +22,6 @@ const CrearVenta = ({ token, idusuario,idsucursal }) => {
   const navigate = useNavigate();
   const [tblventatmp, setTblVentaTmp] = useState([]);
   const [cantidad, setCantidad] = useState(0);
-  const [clienteSelected, setClienteSelected] = useState(null);
-  const [productoSeleccionado, setProductoSeleccionado] = useState(null);
   const [total, setTotal] = useState(0);
   const [totalIva, setTotalIva] = useState(0);
   const [descuento, setDescuento] = useState(0);
@@ -34,11 +32,20 @@ const CrearVenta = ({ token, idusuario,idsucursal }) => {
   const handleShow = () => setShow(true);
   const [mensaje, setMensaje] = useState(null);
 
+  //Buscador
+  const [clienteSelected, setClienteSelected] = useState(null);
+  const [valueCliente, setValueCliente] = useState("");
+  const [productoSeleccionado, setProductoSeleccionado] = useState(null);
+  const [valueProd, setValueProd] = useState("");
+  
+
   const config = {
     headers: {
       "Authorization": `Bearer ${token}`,
     }
   };
+
+  
 
 
   const verificaproceso = async () => {
@@ -180,13 +187,14 @@ const CrearVenta = ({ token, idusuario,idsucursal }) => {
             }
 
           setProductoSeleccionado(null);
+          setValueProd("")
 
         } else {
           setMensaje('El producto ya existe en la lista')
           setTimeout(() => {
             setMensaje(null)
           }, 8000);
-          handleShow();;
+          handleShow();
         }
       } else {
         setMensaje('Cargue la cantidad de producto')
@@ -229,6 +237,7 @@ const CrearVenta = ({ token, idusuario,idsucursal }) => {
   const limpiarCliente = (e) => {
     e.preventDefault();
     setClienteSelected(null);
+    setValueCliente("");
   }
 
   const btnCancelar = (e) => {
@@ -242,7 +251,7 @@ const CrearVenta = ({ token, idusuario,idsucursal }) => {
         {mensaje ? <AlertModal tipoMensaje={'danger'} mensaje={mensaje} show={show} handleClose={handleClose} /> : null}
       </div>
       <div style={{ margin: `20px` }}>
-        <h2>Cargar venta</h2>
+        <h2>Registrar venta</h2>
       </div>
       {/* Contenedor de clientes */}
       <Container style={{ border: `1px solid gray  `, borderRadius: `5px` }} >
@@ -250,7 +259,7 @@ const CrearVenta = ({ token, idusuario,idsucursal }) => {
         <form name="formAdd" onSubmit={limpiarCliente}  >
           <Row style={{ alignItems: `center`, justifyContent: `center`, margin: `10px` }}>
             <Col>
-              <BuscadorDato setDatoSeleccionado={setClienteSelected} uri={URICLI + "get/"} config={config} campo={'Cliente'} />
+              <BuscadorDato setDatoSeleccionado={setClienteSelected} uri={URICLI + "get/"} config={config} campo={'Cliente'} setValue={setValueCliente} value={valueCliente}/>
             </Col>
             <Col>
               <input style={{ minWidth: `430px` }} value={clienteSelected == null ? "Cliente" : clienteSelected.razon_social} disabled={true} className="form-control" />
@@ -261,14 +270,16 @@ const CrearVenta = ({ token, idusuario,idsucursal }) => {
           </Row>
         </form>
       </Container>
-      <br />
+      
+      <br/>
+      
       {/* Contenedor de productos */}
       <Container style={{ border: `1px solid gray  `, borderRadius: `5px` }} >
         <h5 style={{ margin: `10px` }}>Productos</h5>
         <form name="formAdd" onSubmit={agregarLista}  >
           <Row style={{ alignItems: `center`, justifyContent: `center`, margin: `10px` }}>
             <Col>
-              <BuscadorDato setDatoSeleccionado={setProductoSeleccionado} uri={URIPROD + `productoventa/${idsucursal}`} config={config} campo={'Producto'} />
+              <BuscadorDato setDatoSeleccionado={setProductoSeleccionado} uri={URIPROD + `productoventa/${idsucursal}`} config={config} campo={'Producto'} setValue={setValueProd} value={valueProd} />
             </Col>
             <Col xs={1} >
               <label className="form-label">Cantidad</label>
@@ -288,6 +299,7 @@ const CrearVenta = ({ token, idusuario,idsucursal }) => {
           </Row>
         </form>
       </Container>
+      <br/>
       <Table striped bordered hover>
         <thead className='table-primary'>
           <tr>
@@ -337,7 +349,7 @@ const CrearVenta = ({ token, idusuario,idsucursal }) => {
       </Table>
       <form onSubmit={gestionGuardado}>
         <div style={{ margin: `30px` }}>
-          <button disabled={tblventatmp.length === 0 ? true : false} style={{ margin: `10px` }} type="submit" className="btn btn-primary">Guardar</button>
+          <button disabled={tblventatmp.length === 0 ? true : false} style={{ margin: `10px` }} type="submit" className="btn btn-primary">Procesar</button>
           <button style={{ margin: `10px` }} onClick={btnCancelar} className="btn btn-primary">Cancelar</button>
         </div>
       </form>

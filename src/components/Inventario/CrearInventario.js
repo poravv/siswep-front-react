@@ -1,8 +1,8 @@
 import axios from "axios";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import '../../CSS/Cuerpo.css'
-import Autosuggest from 'react-autosuggest';
+import BuscadorDato from "../Buscador/Buscador";
 import '../../CSS/Buscador.css';
 import { IoAddSharp, IoTrashOutline } from 'react-icons/io5';
 import Table from 'react-bootstrap/Table';
@@ -16,16 +16,19 @@ const URIPROD = 'http://186.158.152.141:3001/sisweb/api/producto/';
 const CrearInventario = ({ token, idsucursal }) => {
   
   const fechaActual = new Date();
-  //console.log(token);
 
   const strFecha = fechaActual.getFullYear() + "-" + (fechaActual.getMonth()+1) + "-" + fechaActual.getDate();
   
-  console.log(strFecha);
+  //console.log(strFecha);
 
   const navigate = useNavigate();
   const [tblinventariotmp, setTblInventarioTmp] = useState([]);
   const [cantidad, setCantidad] = useState(0);
   const [mensaje, setMensaje] = useState(null);
+
+  //Buscador 
+  const [productoSeleccionado, setproductoSeleccionado] = useState(null);
+  const [valueProd, setvalueProd] = useState("");
 
   const config = {
     headers: {
@@ -60,7 +63,7 @@ const CrearInventario = ({ token, idsucursal }) => {
           cantidad_total: (parseInt(value.data.body[0].cantidad_total) + parseInt(inventario.cantidad)),
           //cantidad_ven: value.data.body[0].cantidad_ven,
         }).then((cabecera) => {
-          console.log('El id es: ', cabecera);
+          //console.log('El id es: ', cabecera);
           //Guardado del detalle
           guardaDetalle({
             cantidad: inventario.cantidad,
@@ -154,7 +157,7 @@ const CrearInventario = ({ token, idsucursal }) => {
   */
 
   const actualizaCab = async (idinventario, valores) => {
-    console.log("Entra en actualizaCab");
+    //console.log("Entra en actualizaCab");
     return await axios.put(URI + "put/" + idinventario, valores, config);
     //console.log(invCabecera);
   }
@@ -178,10 +181,9 @@ const CrearInventario = ({ token, idsucursal }) => {
             producto: productoSeleccionado,
             cantidad: cantidad
           });
-          setProductoSeleccionado(null);
-          setproducto([]);
+          setproductoSeleccionado(null);
           setCantidad(0);
-          setValue("");
+          setvalueProd("");
 
         } else {
           setMensaje('El producto ya existe en la lista')
@@ -205,100 +207,11 @@ const CrearInventario = ({ token, idsucursal }) => {
   }
 
 
-  /**********************************************************/
-  /**************************Buscador************************/
-  /**********************************************************/
-
-  const [producto, setproducto] = useState([]);
-  const [filtroProducto, setFiltroProducto] = useState([]);
-  const [value, setValue] = useState("");
-  const [productoSeleccionado, setProductoSeleccionado] = useState(null);
-
-
-  const getProductos = async () => {
-    const res = await axios.get(`${URIPROD}get/`, config);
-    setproducto(res.data.body);
-    setFiltroProducto(res.data.body);
-  }
-
-  useEffect(() => {
-    getProductos()
-    // eslint-disable-next-line
-  }, [])
-
-  const onSuggestionsFetchRequested = ({ value }) => {
-    setproducto(filtrarproducto(value));
-  }
-
-  const filtrarproducto = (value) => {
-    const inputValue = value.trim().toLowerCase();
-    const inputLength = inputValue.length;
-
-    // eslint-disable-next-line 
-    var filtrado = filtroProducto.filter((producto) => {
-      var textoCompleto = producto.descripcion + " - " + new Intl.NumberFormat('es-PY').format(producto.precio) + " - " + producto.estado;
-
-      if (textoCompleto.toLowerCase()
-        .normalize("NFD")
-        .replace(/[\u0300-\u036f]/g, "")
-        .includes(inputValue)) {
-        return producto;
-      }
-    });
-
-    return inputLength === 0 ? [] : filtrado;
-  }
-
-  const onSuggestionsClearRequested = () => {
-    setproducto([]);
-  }
-
-  const getSuggestionValue = (suggestion) => {
-    return `${suggestion.descripcion} - ${new Intl.NumberFormat('es-PY').format(suggestion.precio)} - ${suggestion.estado}`;
-  }
-
-  const renderSuggestion = (suggestion) => (
-    <div className='sugerencia' onClick={() => seleccionarproducto(suggestion)}>
-      {`${suggestion.descripcion} - ${new Intl.NumberFormat('es-PY').format(suggestion.precio)} - ${suggestion.estado}`}
-    </div>
-  );
-
-  const seleccionarproducto = (producto) => {
-    setProductoSeleccionado(producto);
-  }
-
-  const onChange = (e, { newValue }) => {
-    setValue(newValue);
-  }
-
-  const inputProps = {
-    placeholder: "Seleccione producto",
-    value,
-    onChange
-  };
-
   const extraerRegistro = (id) => {
     //console.log('Entra en delete', id);
     const updtblInventario = tblinventariotmp.filter(inv => inv.idproducto !== id);
     setTblInventarioTmp(updtblInventario);
   };
-
-
-  const eventEnter = (e) => {
-    // eslint-disable-next-line 
-    if (e.key == "Enter") {
-      var split = e.target.value.split('-');
-      var producto = {
-        producto: split[0].trim(),
-        pais: split[1].trim(),
-      };
-      seleccionarproducto(producto);
-    }
-  }
-
-  /**********************************************************/
-  /***********************Fin Buscador***********************/
-  /**********************************************************/
 
   const btnCancelar = (e) => {
     e.preventDefault();
@@ -314,9 +227,7 @@ const CrearInventario = ({ token, idsucursal }) => {
         <div style={{ backgroundColor: `white`, display: `flex`, alignItems: `center`, justifyContent: `center`, flexWrap: `wrap` }}>
           <label style={{ margin: `10px` }} className="form-label">Producto</label>
           <div style={{ margin: `10px` }} >
-            <Autosuggest
-              suggestions={producto} onSuggestionsFetchRequested={onSuggestionsFetchRequested} onSuggestionsClearRequested={onSuggestionsClearRequested}
-              getSuggestionValue={getSuggestionValue} renderSuggestion={renderSuggestion} inputProps={inputProps} onSuggestionSelected={eventEnter} />
+          <BuscadorDato setDatoSeleccionado={setproductoSeleccionado} uri={`${URIPROD}get/`} config={config} campo={'Producto'} setValue={setvalueProd} value={valueProd}/>
           </div>
           <label style={{ margin: `10px` }} className="form-label">Cantidad</label>
           <div style={{ margin: `10px` }}>

@@ -1,6 +1,6 @@
 import React from 'react'
 import { Form } from 'react-bootstrap';
-import '../CSS/Cuerpo.css'
+import '../CSS/Cuerpo.css';
 
 export const Inicio = ({usuario}) => {
     return (

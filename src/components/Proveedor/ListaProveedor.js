@@ -4,7 +4,9 @@ import { Link } from 'react-router-dom';
 import Table from 'react-bootstrap/Table';
 import { IoAddSharp, IoTrashOutline, IoPencil, IoHomeOutline } from 'react-icons/io5';
 import Paginador from '../Paginador/Paginador';
-import {logOutSys} from '../../components/Utils/LogOutSys';
+import { logOutSys } from '../../components/Utils/LogOutSys';
+import * as XLSX from 'xlsx/xlsx.mjs';
+import { RiFileExcel2Line } from "react-icons/ri";
 
 
 const URI = 'http://186.158.152.141:3001/sisweb/api/proveedor/get'
@@ -34,7 +36,7 @@ const ListaProveedor = ({ token }) => {
     const getProveedor = async () => {
         const res = await axios.get(URI, config)
         /*En caso de que de error en el server direcciona a login*/
-        if(res.data.error){
+        if (res.data.error) {
             logOutSys();
         }
 
@@ -64,77 +66,89 @@ const ListaProveedor = ({ token }) => {
         //console.log(filtroProveedor);
     }
 
-/**********************************************************/
-/*************************Paginador************************/
-/**********************************************************/
-const [paginaInicial,setPaginaInicial] = useState(1);
-const [registros] = useState(7);
-const indiceSiguiente = paginaInicial * registros;
-const indiceAnterior = indiceSiguiente - registros;
-const proveedorPaginado = proveedor.slice(indiceAnterior,indiceSiguiente);
+    /**********************************************************/
+    /*************************Paginador************************/
+    /**********************************************************/
+    const [paginaInicial, setPaginaInicial] = useState(1);
+    const [registros] = useState(7);
+    const indiceSiguiente = paginaInicial * registros;
+    const indiceAnterior = indiceSiguiente - registros;
+    const proveedorPaginado = proveedor.slice(indiceAnterior, indiceSiguiente);
 
-//Cambio de pagina
-const paginate = (pageNumber) => setPaginaInicial(pageNumber);
+    //Cambio de pagina
+    const paginate = (pageNumber) => setPaginaInicial(pageNumber);
 
-/**********************************************************/
-/************************Fin Paginador*********************/
-/**********************************************************/
+    /**********************************************************/
+    /************************Fin Paginador*********************/
+    /**********************************************************/
 
+    const handleExport = () => {
+        var wb = XLSX.utils.book_new(), ws = XLSX.utils.json_to_sheet(proveedor);
+
+        XLSX.utils.book_append_sheet(wb, ws, 'Proveedores');
+        XLSX.writeFile(wb, 'Proveedores.xlsx')
+
+    }
 
     return (
-        <div className='container'>
+        <div>
             <div style={{ margin: `20px` }}>
                 <h2>Proveedores</h2>
             </div>
-            <div className='row'>
-                <div className='col'>
-                <Table striped bordered hover>
-                        <thead className='table-primary'>
-                            <tr>
-                                <th>
-                                    Proveedor
-                                    <br />
-                                    <input
-                                        type="text"
-                                        value={labelFilter}
-                                        onChange={(e) =>
-                                            changeKeyLabel(e.target.value)
-                                        } />
-                                </th>
-                                <th>
-                                    ruc
-                                    <br />
-                                    <input
-                                        type="text"
-                                        value={rucFilter}
-                                        onChange={(e) =>
-                                            changeKeyRucLabel(e.target.value)
-                                        } />
-                                </th>
-                                <th>direccion</th>
-                                <th>telefono</th>
-                                <th>Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {proveedorPaginado.map((prod) => (
-                                <tr key={prod.idproveedor}>
-                                    <td> {prod.razon_social} </td>
-                                    <td> {prod.ruc} </td>
-                                    <td> {prod.direccion} </td>
-                                    <td> {prod.telefono} </td>
-                                    <td>
-                                        <Link style={{ margin: `5px` }} to={`/editarprov/${prod.idproveedor}`} className='btn btn-info'><IoPencil /></Link>
-                                        <button style={{ margin: `5px` }} onClick={() => deleteProveedor(prod.idproveedor)} className='btn btn-danger'><IoTrashOutline /></button>
-                                    </td>
+            <div className='container'>
+                <div className='row'>
+                    <div className='col'>
+                        <Link onClick={handleExport} >
+                            <RiFileExcel2Line size={55} color={`green`} onClick={handleExport} >Export</RiFileExcel2Line>
+                        </Link>
+                        <Table striped bordered hover>
+                            <thead className='table-primary'>
+                                <tr>
+                                    <th>
+                                        Proveedor
+                                        <br />
+                                        <input
+                                            type="text"
+                                            value={labelFilter}
+                                            onChange={(e) =>
+                                                changeKeyLabel(e.target.value)
+                                            } />
+                                    </th>
+                                    <th>
+                                        ruc
+                                        <br />
+                                        <input
+                                            type="text"
+                                            value={rucFilter}
+                                            onChange={(e) =>
+                                                changeKeyRucLabel(e.target.value)
+                                            } />
+                                    </th>
+                                    <th>direccion</th>
+                                    <th>telefono</th>
+                                    <th>Actions</th>
                                 </tr>
-                            ))}
-                        </tbody>
-                    </Table>
-                    <Paginador pagina={registros} totalPagina={proveedor.length} paginate={paginate} />
-                    <div style={{ margin: `10px` }}>
-                        <Link style={{ margin: `10px`, width: `100px` }} to="/" className='btn btn-success mt-2 mb-2'> <IoHomeOutline /></Link>
-                        <Link style={{ margin: `10px`, width: `100px` }} to="/crearprov" className='btn btn-primary mt-2 mb-2'> <IoAddSharp /></Link>
+                            </thead>
+                            <tbody>
+                                {proveedorPaginado.map((prod) => (
+                                    <tr key={prod.idproveedor}>
+                                        <td> {prod.razon_social} </td>
+                                        <td> {prod.ruc} </td>
+                                        <td> {prod.direccion} </td>
+                                        <td> {prod.telefono} </td>
+                                        <td>
+                                            <Link style={{ margin: `5px` }} to={`/editarprov/${prod.idproveedor}`} className='btn btn-info'><IoPencil /></Link>
+                                            <button style={{ margin: `5px` }} onClick={() => deleteProveedor(prod.idproveedor)} className='btn btn-danger'><IoTrashOutline /></button>
+                                        </td>
+                                    </tr>
+                                ))}
+                            </tbody>
+                        </Table>
+                        <Paginador pagina={registros} totalPagina={proveedor.length} paginate={paginate} />
+                        <div style={{ margin: `10px` }}>
+                            <Link style={{ margin: `10px`, width: `100px` }} to="/" className='btn btn-success mt-2 mb-2'> <IoHomeOutline /></Link>
+                            <Link style={{ margin: `10px`, width: `100px` }} to="/crearprov" className='btn btn-primary mt-2 mb-2'> <IoAddSharp /></Link>
+                        </div>
                     </div>
                 </div>
             </div>

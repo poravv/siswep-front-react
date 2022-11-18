@@ -3,11 +3,9 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import '../../CSS/Cuerpo.css';
 import '../../CSS/Buscador.css';
-import Autosuggest from 'react-autosuggest';
-import { useEffect } from "react";
+import BuscadorDato from "../Buscador/Buscador";
 import AlertModal from '../Utils/AlertModal';
 import Form from 'react-bootstrap/Form';
-
 
 const URI = 'http://186.158.152.141:3001/sisweb/api/cliente/';
 const URICIUDAD = 'http://186.158.152.141:3001/sisweb/api/ciudad/';
@@ -24,12 +22,15 @@ const CrearCliente = ({ token, idusuario }) => {
     const [sexo, setSexo] = useState('');
     const navigate = useNavigate();
 
-
     //Llamada a alerta y su mensaje
     const [show, setShow] = useState(false);
     const handleClose = () => setShow(false);
     const handleShow = () => setShow(true);
     const [mensaje, setMensaje] = useState(null);
+
+    //Buscador
+    const [ciudadSeleccionada, setciudadSeleccionada] = useState(null);
+    const [valueCiudad, setvalueCiudad] = useState("");
 
 
 
@@ -92,93 +93,6 @@ const CrearCliente = ({ token, idusuario }) => {
 
 
 
-    /**********************************************************/
-    /**************************Buscador************************/
-    /**********************************************************/
-
-    const [ciudad, setciudad] = useState([]);
-    const [filtroCiudad, setFiltroCiudad] = useState([]);
-    const [value, setValue] = useState("");
-    const [ciudadSeleccionada, setCiudadSeleccionado] = useState(null);
-
-
-    const getCiudades = async () => {
-        const res = await axios.get(URICIUDAD + "get/", config);
-        setciudad(res.data.body);
-        setFiltroCiudad(res.data.body);
-    }
-
-    useEffect(() => {
-        getCiudades()
-        // eslint-disable-next-line
-    }, [])
-
-    const onSuggestionsFetchRequested = ({ value }) => {
-        setciudad(filtrarciudad(value));
-    }
-
-    const filtrarciudad = (value) => {
-        const inputValue = value.trim().toLowerCase();
-        const inputLength = inputValue.length;
-
-        // eslint-disable-next-line 
-        var filtrado = filtroCiudad.filter((ciudad) => {
-            var textoCompleto = ciudad.descripcion + " - " + ciudad.estado;
-
-            if (textoCompleto.toLowerCase()
-                .normalize("NFD")
-                .replace(/[\u0300-\u036f]/g, "")
-                .includes(inputValue)) {
-                return ciudad;
-            }
-        });
-
-        return inputLength === 0 ? [] : filtrado;
-    }
-
-    const onSuggestionsClearRequested = () => {
-        setciudad([]);
-    }
-
-    const getSuggestionValue = (suggestion) => {
-        return `${suggestion.descripcion}  - ${suggestion.estado}`;
-    }
-
-    const renderSuggestion = (suggestion) => (
-        <div className='sugerencia' onClick={() => seleccionarciudad(suggestion)}>
-            {`${suggestion.descripcion} - ${suggestion.estado}`}
-        </div>
-    );
-
-    const seleccionarciudad = (ciudad) => {
-        setCiudadSeleccionado(ciudad);
-    }
-
-    const onChange = (e, { newValue }) => {
-        setValue(newValue);
-    }
-
-    const inputProps = {
-        placeholder: "Seleccione ciudad",
-        value,
-        onChange
-    };
-
-    const eventEnter = (e) => {
-        // eslint-disable-next-line 
-        if (e.key == "Enter") {
-            var split = e.target.value.split('-');
-            var ciudad = {
-                ciudad: split[0].trim(),
-                pais: split[1].trim(),
-            };
-            seleccionarciudad(ciudad);
-        }
-    }
-
-    /**********************************************************/
-    /***********************Fin Buscador***********************/
-    /**********************************************************/
 
     const cambioCheck = (e) => {
         //e.preventDefault();
@@ -274,9 +188,7 @@ const CrearCliente = ({ token, idusuario }) => {
 
                 <div className="mb-3">
                     <label className="form-label">Ciudad (*)</label>
-                    <Autosuggest
-                        suggestions={ciudad} onSuggestionsFetchRequested={onSuggestionsFetchRequested} onSuggestionsClearRequested={onSuggestionsClearRequested}
-                        getSuggestionValue={getSuggestionValue} renderSuggestion={renderSuggestion} inputProps={inputProps} onSuggestionSelected={eventEnter} />
+                    <BuscadorDato setDatoSeleccionado={setciudadSeleccionada} uri={URICIUDAD + "get/"} config={config} campo={'Ciudad'} setValue={setvalueCiudad} value={valueCiudad} />
                 </div>
 
                 <div style={{ alignItems: `center`, justifyContent: `center`, display: `flex` }}>

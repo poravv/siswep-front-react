@@ -7,7 +7,7 @@ import ListaArticulos from '../components/Articulos/ListaArticulos';
 import ListaProveedor from '../components/Proveedor/ListaProveedor';
 import CrearProveedor from '../components/Proveedor/CrearProveedor';
 import EditarProveedor from '../components/Proveedor/EditarProveedor';
-import Navbar from '../layouts/NavBar';
+import Navbar from './NavBar';
 import ListaInventario from '../components/Inventario/ListaInventario';
 import ListaDetInventario from '../components/Inventario/ListaDetInventario';
 import CrearInventario from '../components/Inventario/CrearInventario';
@@ -19,18 +19,17 @@ import EditarCliente from '../components/Clientes/EditarClientes';
 import ListaVenta from '../components/Venta/ListaVenta';
 import ListaDetVenta from '../components/Venta/ListaDetVenta';
 import CrearVenta from '../components/Venta/CrearVenta';
+import SideBar from './SideBar';
 
 
-function NavigatorBar({ usuario }) {
-
-  //console.log(usuario.body.idusuario);
-  //console.log("Suc: ",usuario.body.idsucursal);
-
+function ConfigBrows({ usuario }) {
   return (
     <>
       <BrowserRouter>
         <Routes>
-          <Route path='/' element={<Navbar nivel={usuario.body.nivel} />} >
+          <Route path='/' element={<SideBar />} />
+          <Route path='/' element={<Navbar />} >
+
             <Route index element={<Inicio usuario={usuario.body.nick} />} />
             <Route path='/inicio' element={<Inicio />} />
             {
@@ -67,10 +66,11 @@ function NavigatorBar({ usuario }) {
             <Route path='/detventa/:idventa' element={<ListaDetVenta token={usuario.token} />} />
             <Route path='/crearventa' element={<CrearVenta token={usuario.token} idusuario={usuario.body.idusuario} idsucursal={usuario.body.idsucursal} />} />
           </Route>
-        </Routes>
+        </Routes>  
       </BrowserRouter>
+      
     </>
   )
 }
 
-export default NavigatorBar;
+export default ConfigBrows;

@@ -1,8 +1,8 @@
 import axios from "axios";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import '../../CSS/Cuerpo.css'
-import Autosuggest from 'react-autosuggest';
+import BuscadorDato from "../Buscador/Buscador";
 import '../../CSS/Buscador.css';
 import { IoAddSharp, IoTrashOutline } from 'react-icons/io5';
 import Table from 'react-bootstrap/Table';
@@ -12,18 +12,11 @@ import Form from 'react-bootstrap/Form';
 
 const URI = 'http://186.158.152.141:3001/sisweb/api/producto_final/';
 const URIRECETA = 'http://186.158.152.141:3001/sisweb/api/receta/';
-const URIPROVEEDOR = 'http://186.158.152.141:3001/sisweb/api/producto/';
+const URIARTICULO = 'http://186.158.152.141:3001/sisweb/api/producto/';
 
 
 
 const CrearProductoFinal = ({ token }) => {
-
-    //const fechaActual = new Date();
-    //console.log(token);
-
-    //const strFecha = fechaActual.getFullYear() + "-" + (fechaActual.getMonth() + 1) + "-" + fechaActual.getDate();
-
-    //console.log(strFecha);
 
     const navigate = useNavigate();
     const [tblproducto_finaltmp, setTblProductoFinalTmp] = useState([]);
@@ -32,13 +25,17 @@ const CrearProductoFinal = ({ token }) => {
     const [nombre, setNombre] = useState('');
     const [descripcion, setDescripcion] = useState('');
     const [total, setTotal] = useState(0);
-    const [montoiva, setMontoIva] = useState(0);
+    const [tipoIva, setTipoIva] = useState(0);
 
     //Llamada a alerta y su mensaje
     const [show, setShow] = useState(false);
     const handleClose = () => setShow(false);
     const handleShow = () => setShow(true);
     const [mensaje, setMensaje] = useState(null);
+
+    //Buscador
+    const [articuloSeleccionado, setarticuloSeleccionado] = useState(null);
+    const [valueArticulo, setvalueArticulo] = useState("");
 
 
     const config = {
@@ -56,8 +53,7 @@ const CrearProductoFinal = ({ token }) => {
         2- Buscar si existe un registro de la cabecera por el producto
         3-Insertar cabecera si no existe y actualizar si es que existe
         */
-        //console.log("Guarda cabecera");
-        if (nombre.trim===''||descripcion.trim==='' ||costo<0 ||tipoIva===0) {
+        if (nombre.trim === '' || descripcion.trim === '' || costo < 0 || tipoIva === 0) {
             //console.log("ERROR: ");
             setMensaje('Verificar valores cargados.')
             setTimeout(() => {
@@ -65,7 +61,6 @@ const CrearProductoFinal = ({ token }) => {
             }, 8000);
             handleShow();
             return null;
-            //<label style={{ color: `red`, margin: `10px` }} >{mensaje}</label>
         }
         try {
             guardaCab(
@@ -74,8 +69,7 @@ const CrearProductoFinal = ({ token }) => {
                     nombre: nombre,
                     descripcion: descripcion,
                     costo: costo,
-                    tipo_iva:tipoIva,
-                    monto_iva:montoiva
+                    tipo_iva: tipoIva
                 }
             ).then((cabecera) => {
 
@@ -134,23 +128,21 @@ const CrearProductoFinal = ({ token }) => {
     const agregarLista = async (e) => {
         e.preventDefault();
 
-        const validExist = tblproducto_finaltmp.filter((inv) => inv.idproducto === productoSeleccionado.idproducto);
-        //console.log(productoSeleccionado);
+        const validExist = tblproducto_finaltmp.filter((inv) => inv.idproducto === articuloSeleccionado.idproducto);
+        //console.log(articuloSeleccionado);
 
-        if (productoSeleccionado !== null) {
+        if (articuloSeleccionado !== null) {
             if (cantidad !== 0 && cantidad !== null && cantidad !== '') {
                 if (validExist.length === 0) {
 
                     tblproducto_finaltmp.push({
-                        idproducto: productoSeleccionado.idproducto,
-                        producto: productoSeleccionado,
+                        idproducto: articuloSeleccionado.idproducto,
+                        producto: articuloSeleccionado,
                         cantidad: cantidad
                     });
-                    setTotal(total + (cantidad * productoSeleccionado.precio))
-                    setProductoSeleccionado(null);
-                    setproducto([]);
-                    setCantidad(0);
-                    setValue("");
+                    setTotal(total + (cantidad * articuloSeleccionado.precio))
+                    setarticuloSeleccionado(null);
+                    setvalueArticulo("");
 
                 } else {
                     setMensaje('El producto ya existe en la lista')
@@ -174,96 +166,23 @@ const CrearProductoFinal = ({ token }) => {
         }
     }
 
-    const [tipoIva, setTipoIva] = useState(0);
-    const [habilita, setHabilita] = useState(false);
+    
+    
 
 
     const cambioCheck = (e) => {
-        //e.preventDefault();
-        setHabilita(true)
         const { id } = e.target;
-        //console.log(id,checked)
         setTipoIva(id);
-        setMontoIva(costo*parseInt(id)/100);
     }
 
-
-    /**********************************************************/
-    /**************************Buscador************************/
-    /**********************************************************/
-
-    const [producto, setproducto] = useState([]);
-    const [filtroProducto, setFiltroProducto] = useState([]);
-    const [value, setValue] = useState("");
-    const [productoSeleccionado, setProductoSeleccionado] = useState(null);
-
-
-    const getProductos = async () => {
-        const res = await axios.get(URIPROVEEDOR + "get/", config);
-        setproducto(res.data.body);
-        setFiltroProducto(res.data.body);
+    const btnCancelar = (e) => {
+        e.preventDefault();
+        navigate('/producto_final');
     }
-
-    useEffect(() => {
-        getProductos()
-        // eslint-disable-next-line
-    }, [])
-
-    const onSuggestionsFetchRequested = ({ value }) => {
-        setproducto(filtrarproducto(value));
-    }
-
-    const filtrarproducto = (value) => {
-        const inputValue = value.trim().toLowerCase();
-        const inputLength = inputValue.length;
-
-        // eslint-disable-next-line 
-        var filtrado = filtroProducto.filter((producto) => {
-            var textoCompleto = producto.descripcion + " - " + new Intl.NumberFormat('es-PY').format(producto.precio) + " - " + producto.estado;
-
-            if (textoCompleto.toLowerCase()
-                .normalize("NFD")
-                .replace(/[\u0300-\u036f]/g, "")
-                .includes(inputValue)) {
-                return producto;
-            }
-        });
-
-        return inputLength === 0 ? [] : filtrado;
-    }
-
-    const onSuggestionsClearRequested = () => {
-        setproducto([]);
-    }
-
-    const getSuggestionValue = (suggestion) => {
-        return `${suggestion.descripcion} - ${new Intl.NumberFormat('es-PY').format(suggestion.precio)} - ${suggestion.estado}`;
-    }
-
-    const renderSuggestion = (suggestion) => (
-        <div className='sugerencia' onClick={() => seleccionarproducto(suggestion)}>
-            {`${suggestion.descripcion} - ${new Intl.NumberFormat('es-PY').format(suggestion.precio)} - ${suggestion.estado}`}
-        </div>
-    );
-
-    const seleccionarproducto = (producto) => {
-        setProductoSeleccionado(producto);
-    }
-
-    const onChange = (e, { newValue }) => {
-        setValue(newValue);
-    }
-
-
-    const inputProps = {
-        placeholder: "Seleccione materia",
-        value,
-        onChange
-    };
 
     const extraerRegistro = (id, costo) => {
 
-        console.log('Entra en delete', id);
+        //console.log('Entra en delete', id);
 
         setTotal(total - costo);
 
@@ -274,28 +193,6 @@ const CrearProductoFinal = ({ token }) => {
 
 
     };
-
-
-    const eventEnter = (e) => {
-        // eslint-disable-next-line 
-        if (e.key == "Enter") {
-            var split = e.target.value.split('-');
-            var producto = {
-                producto: split[0].trim(),
-                pais: split[1].trim(),
-            };
-            seleccionarproducto(producto);
-        }
-    }
-
-    /**********************************************************/
-    /***********************Fin Buscador***********************/
-    /**********************************************************/
-
-    const btnCancelar = (e) => {
-        e.preventDefault();
-        navigate('/producto_final');
-    }
 
     return (
         <div >
@@ -316,9 +213,8 @@ const CrearProductoFinal = ({ token }) => {
                     </div>
                     <label className="form-label">Precio(*)</label>
                     <div style={{ display: `flex`, alignItems: `center`, justifyContent: `center` }}>
-                        <input disabled={habilita} style={{ maxWidth: `500px` }} value={costo} onChange={(e) => {
+                        <input style={{ maxWidth: `500px` }} value={costo} onChange={(e) => {
                             setCosto(e.target.value);
-                            setMontoIva(costo*parseInt(tipoIva)/100);
                         }} type="number" className="form-control" />
                     </div>
                 </div>
@@ -342,17 +238,12 @@ const CrearProductoFinal = ({ token }) => {
                             onChange={cambioCheck}
                         />
                     </div>
-                    <div style={{ display: `flex`, alignItems: `center`, justifyContent: `center` }}>
-                        <input disabled style={{ maxWidth: `200px` }} value={montoiva} type="number" className="form-control" />
-                    </div>
                 </div>
 
                 <div style={{ backgroundColor: `white`, display: `flex`, alignItems: `center`, justifyContent: `center`, flexWrap: `wrap` }}>
-                    <label style={{ margin: `10px` }} className="form-label">Materia </label>
+                    <label style={{ margin: `10px` }} className="form-label">Articulo </label>
                     <div style={{ margin: `10px` }}>
-                        <Autosuggest
-                            suggestions={producto} onSuggestionsFetchRequested={onSuggestionsFetchRequested} onSuggestionsClearRequested={onSuggestionsClearRequested}
-                            getSuggestionValue={getSuggestionValue} renderSuggestion={renderSuggestion} inputProps={inputProps} onSuggestionSelected={eventEnter} />
+                        <BuscadorDato setDatoSeleccionado={setarticuloSeleccionado} uri={URIARTICULO + "get/"} config={config} campo={'Articulo'} setValue={setvalueArticulo} value={valueArticulo} />
                     </div>
                     <label style={{ margin: `10px` }} className="form-label">Cantidad</label>
                     <div style={{ margin: `10px` }}>
